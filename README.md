@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ghosts
 
-## Getting Started
+a web app that watches your spotify and quietly remembers your obsessions. when you forget them, they come back.
 
-First, run the development server:
+## what it does (v0.1 → eventually)
+
+- **Eras** (v0.1) — when you finish an obsession phase, an auto-generated playlist is born in your spotify, dated + named (e.g. `march 2026 · the rainy one`)
+- **Ghosts** (v0.2) — rotating playlist of past obsessions you've fully forgotten
+- **Sneaky daily mix** (v0.3) — daily playlist that weaves ghosts into your current rotation
+- **On This Day** (v0.4) — what you were obsessed with 1yr / 2yr ago today
+
+## stack
+
+- Next.js 16 (App Router) + TypeScript + Tailwind v4
+- Supabase (Postgres + auth)
+- Vercel (hosting + cron)
+- Spotify Web API
+
+## first-time setup
+
+### 1. Spotify app
+
+1. Go to https://developer.spotify.com/dashboard and create an app
+2. Set the Redirect URI to `http://localhost:3000/api/auth/spotify/callback`
+3. Copy the Client ID and Client Secret
+
+### 2. Supabase project
+
+1. Create a project at https://supabase.com
+2. From Settings → API, copy the Project URL, anon key, and service role key
+
+### 3. Environment
+
+```bash
+cp .env.local.example .env.local
+# fill in the values you just got
+```
+
+### 4. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## architecture notes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Logging strategy:** one nightly cron loops through all authorized users and pulls each one's `recently-played` from Spotify (last 50 tracks ≈ 24h of listening). Plus opportunistic refresh whenever a user opens the app. No per-user worker fleet.
+- **Era detection:** when a song's 14-day rolling play count drops below X% of its peak, it "burns out" and gets bundled with sibling songs into a new Era playlist.
+- **No historical play counts via API:** Spotify only exposes recent-play history, so all features improve over time as data accumulates.
 
-## Learn More
+## spotify quota note
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+New Spotify apps are capped at **25 authorized users** until you apply for a quota extension (manual review by Spotify). Plan to apply once v1 is polished.

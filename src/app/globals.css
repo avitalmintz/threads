@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* clean off-white, no longer tan */
+  --background: #fdfbf7;
+  --surface: #ffffff;
+  --text: #1a1a1f;
+  --text-muted: #6b6660;
+  --text-faint: #a0998f;
+  --rule: #e8e3d6;
+  --rule-strong: #c8c2b0;
+
+  /* primary accent */
+  --accent: #d63c4a;
+  --accent-soft: rgba(214, 60, 74, 0.1);
+
+  /* mood / theme palette — vibrant, used liberally throughout */
+  --mood-blue: #4a9bd6;
+  --mood-blue-soft: rgba(74, 155, 214, 0.18);
+  --mood-fluorescent: #7ab040;
+  --mood-fluorescent-soft: rgba(122, 176, 64, 0.18);
+  --mood-longing: #b56891;
+  --mood-longing-soft: rgba(181, 104, 145, 0.18);
+  --mood-summer: #d4823a;
+  --mood-summer-soft: rgba(212, 130, 58, 0.18);
+
+  --highlight: #f5d771;
+  --highlight-soft: rgba(245, 215, 113, 0.55);
+
+  /* current era's mood — drives page accent. Default to blue for the mock. */
+  --current-mood: var(--mood-blue);
+  --current-mood-soft: var(--mood-blue-soft);
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-mood-blue: var(--mood-blue);
+  --color-mood-fluorescent: var(--mood-fluorescent);
+  --color-mood-longing: var(--mood-longing);
+  --color-mood-summer: var(--mood-summer);
+  --color-current-mood: var(--current-mood);
+  --color-highlight: var(--highlight);
+  --color-highlight-soft: var(--highlight-soft);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 4rem;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  font-family: var(--font-geist-sans), Helvetica, Arial, sans-serif;
+  font-feature-settings: "kern", "liga";
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--current-mood-soft);
+  color: var(--text);
+}
+
+/* yellow zine highlighter — for emphasis */
+.marker {
+  background: linear-gradient(180deg, transparent 55%, var(--highlight-soft) 55%);
+  padding: 0 0.1em;
+}
+
+/* mood-tinted highlighter — for era/mood-specific emphasis */
+.mood-marker {
+  background: linear-gradient(180deg, transparent 55%, var(--current-mood-soft) 55%);
+  padding: 0 0.1em;
+}
+
+/* a single hand-drawn-feeling wavy divider via SVG bg */
+.wavy-divider {
+  height: 12px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 12' preserveAspectRatio='none'%3E%3Cpath d='M0 6 Q 15 0 30 6 T 60 6' stroke='%23c8c2b0' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 60px 12px;
+  background-position: center;
 }
