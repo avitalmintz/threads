@@ -35,13 +35,13 @@ async function root(): Promise<FileSystemDirectoryHandle> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function saveChatDb(bytes: Uint8Array): Promise<void> {
-  // Ask for persistent storage. Browsers (especially Safari) cap OPFS
-  // tightly without this — once the user opts in, quotas are typically
-  // 5-10× larger and the data won't be evicted under storage pressure.
-  // This is a no-op if already granted; it doesn't prompt the user.
+  // Ask for persistent storage. Browsers cap unspecified storage tightly;
+  // once the user opts in, quotas are larger and the data won't be evicted
+  // under storage pressure. This is a no-op if already granted.
+  let isPersistent = false;
   if (navigator.storage?.persist) {
     try {
-      await navigator.storage.persist();
+      isPersistent = (await navigator.storage.persist()) ?? false;
     } catch {
       // Some browsers throw if persist isn't supported in the context.
     }
@@ -59,13 +59,35 @@ export async function saveChatDb(bytes: Uint8Array): Promise<void> {
       if (quota > 0 && bytes.byteLength > free) {
         const fileMb = bytes.byteLength / (1024 * 1024);
         const freeMb = free / (1024 * 1024);
-        throw new Error(
-          `Your chat.db is ${fileMb.toFixed(0)} MB but only ${freeMb.toFixed(0)} MB is available in this browser. Try Chrome (more generous quota), free up disk space, or wipe the existing data and re-upload.`,
+        const quotaMb = quota / (1024 * 1024);
+        const usageMb = usage / (1024 * 1024);
+
+        // Browser-specific advice. Chrome's quota is roughly 6% of free
+        // disk, so a small "available" number almost always means a
+        // nearly-full hard drive (NOT a browser limitation).
+        const lines: string[] = [];
+        lines.push(
+          `your chat.db is ${fileMb.toFixed(0)} MB but your browser will only let us store ${freeMb.toFixed(0)} MB right now.`,
         );
+        if (usage > 50 * 1024 * 1024) {
+          lines.push(
+            `(${usageMb.toFixed(0)} MB of the ${quotaMb.toFixed(0)} MB total is already taken — wiping local data below would free that.)`,
+          );
+        } else {
+          lines.push(
+            "this almost always means your mac's hard drive is close to full. browsers cap local storage at roughly 6% of your free disk space, so freeing up a few gigabytes (empty trash, delete a downloads folder, etc) will fix it.",
+          );
+        }
+        if (!isPersistent) {
+          lines.push(
+            "tip: refreshing the page once may also help — your browser sometimes increases the quota after the second visit.",
+          );
+        }
+        throw new Error(lines.join("\n\n"));
       }
     } catch (err) {
       // Surface our pre-flight error; swallow estimate-API errors only.
-      if (err instanceof Error && err.message.startsWith("Your chat.db is")) {
+      if (err instanceof Error && err.message.startsWith("your chat.db is")) {
         throw err;
       }
     }
