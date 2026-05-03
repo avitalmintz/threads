@@ -7,11 +7,17 @@
 
 import { useEffect, useState } from "react";
 import {
+  getHandleDetail,
+  getOneOnOneMessageCount,
+} from "@/lib/browser-db";
+import {
   getCachedDeepDive,
   runDeepDive,
   type DeepDiveResult,
   type ProgressUpdate,
 } from "@/lib/browser-deep-dive";
+
+const MIN_ONE_ON_ONE_FOR_DEEP_DIVE = 50;
 
 export function DeepDive({
   handleId,
@@ -23,47 +29,56 @@ export function DeepDive({
   const [result, setResult] = useState<DeepDiveResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Separate "not eligible" state — different from a real failure (red).
-  // Set when runDeepDive returns null because there aren't enough 1:1
-  // messages with this contact to do a meaningful map-reduce read.
-  const [notEnough, setNotEnough] = useState(false);
   const [checkedCache, setCheckedCache] = useState(false);
   const [showSegments, setShowSegments] = useState(false);
   const [progress, setProgress] = useState<ProgressUpdate | null>(null);
+  // Diagnostic counts so we can explain why deep dive isn't available
+  // when the contact has tons of total messages but few private 1:1s
+  // (the common case: someone you mostly group-chat with).
+  const [counts, setCounts] = useState<{
+    total: number;
+    oneOnOne: number;
+  } | null>(null);
 
-  // On mount, peek at the IndexedDB cache.
+  // On mount, peek at the IndexedDB cache + compute eligibility counts.
   useEffect(() => {
     let cancelled = false;
-    getCachedDeepDive(handleId)
-      .then((cached) => {
+    (async () => {
+      const detail = getHandleDetail(handleId, 1);
+      const oneOnOne = getOneOnOneMessageCount(handleId);
+      if (!cancelled) {
+        setCounts({ total: detail?.totalMessages ?? 0, oneOnOne });
+      }
+      try {
+        const cached = await getCachedDeepDive(handleId);
         if (!cancelled) {
           setResult(cached);
           setCheckedCache(true);
         }
-      })
-      .catch(() => setCheckedCache(true));
+      } catch {
+        if (!cancelled) setCheckedCache(true);
+      }
+    })();
     return () => {
       cancelled = true;
     };
   }, [handleId]);
 
+  const notEligible =
+    counts !== null && counts.oneOnOne < MIN_ONE_ON_ONE_FOR_DEEP_DIVE;
+
   async function trigger() {
     if (loading) return;
     setLoading(true);
     setError(null);
-    setNotEnough(false);
     setProgress(null);
     try {
       const r = await runDeepDive(handleId, displayName, (p) => {
         setProgress(p);
       });
-      if (!r) {
-        // Not a failure — just means this contact doesn't have enough 1:1
-        // history to be worth chunking + summarizing.
-        setNotEnough(true);
-      } else {
-        setResult(r);
-      }
+      if (r) setResult(r);
+      // If runDeepDive returns null we already handle that via notEligible
+      // (the button wouldn't have rendered, so this branch is unlikely).
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -81,7 +96,7 @@ export function DeepDive({
         deep dive: every period of your friendship
       </h2>
 
-      {!result && !loading && !notEnough && checkedCache && (
+      {!result && !loading && !notEligible && checkedCache && (
         <div className="border-l-2 border-[var(--color-rule-strong)] pl-5 py-2 max-w-prose">
           <p className="text-base text-[var(--color-text-muted)] leading-relaxed mb-3">
             the AI summary above reads a sample of your conversation. for a
@@ -97,12 +112,29 @@ export function DeepDive({
         </div>
       )}
 
-      {notEnough && !loading && (
-        <p className="text-base text-[var(--color-text-muted)] italic font-[family-name:var(--font-serif)] leading-relaxed max-w-prose">
-          not enough one-on-one messages with this person to do a deep dive.
-          deep dives need at least 50 private messages between just the two
-          of you (group-chat messages don&apos;t count).
-        </p>
+      {notEligible && !loading && counts && (
+        <div className="max-w-prose text-base text-[var(--color-text-muted)] italic font-[family-name:var(--font-serif)] leading-relaxed">
+          <p>
+            deep dive isn&apos;t available for this contact. it needs at
+            least {MIN_ONE_ON_ONE_FOR_DEEP_DIVE} private (one-on-one)
+            messages, and you only have{" "}
+            <span className="not-italic font-mono">
+              {counts.oneOnOne.toLocaleString()}
+            </span>
+            .
+          </p>
+          {counts.total > counts.oneOnOne * 2 && (
+            <p className="mt-3 text-sm text-[var(--color-text-faint)]">
+              your overall message count with this person (
+              <span className="not-italic font-mono">
+                {counts.total.toLocaleString()}
+              </span>
+              ) is much higher because it includes group-chat messages they
+              sent, but a deep dive only reads the private back-and-forth
+              between just the two of you.
+            </p>
+          )}
+        </div>
       )}
 
       {loading && (

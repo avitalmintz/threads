@@ -746,6 +746,31 @@ export function getTextureStats(handleId: number): TextureStats {
   };
 }
 
+/**
+ * Cheap count of 1:1 (private, non-group) messages with a contact, with
+ * non-empty text. Used by the deep dive to decide eligibility upfront,
+ * and to explain to the user *why* deep dive isn't available when their
+ * relationship with someone is mostly group chats.
+ */
+export function getOneOnOneMessageCount(handleId: number): number {
+  const row = prepare(
+    `
+    WITH chat_size AS (
+      SELECT chat_id, COUNT(*) AS sz, MIN(handle_id) AS solo_handle
+      FROM chat_handle_join
+      GROUP BY chat_id
+    )
+    SELECT COUNT(*) AS c
+    FROM message m
+    JOIN chat_message_join cmj ON cmj.message_id = m.ROWID
+    JOIN chat_size cs ON cs.chat_id = cmj.chat_id
+    WHERE cs.sz = 1 AND cs.solo_handle = ?
+      AND m.text IS NOT NULL AND m.text != ''
+    `,
+  ).get<{ c: number }>(handleId);
+  return row?.c ?? 0;
+}
+
 export function getAllMessagesForHandle(
   handleId: number,
   oneOnOneOnly = false,
