@@ -12,8 +12,8 @@ const ARCHIVE_SUGGESTIONS = [
 
 const CONTACT_SUGGESTIONS = [
   "what do we usually fight about?",
-  "what's our happiest moment?",
-  "when did we get closer?",
+  "what do we mostly talk about?",
+  "what do they care about right now?",
   "what inside jokes do we share?",
 ];
 

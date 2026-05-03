@@ -1,8 +1,8 @@
-# threads
+# read receipts
 
 A web app that lets you ask Claude natural-language questions about your iMessage history and surfaces AI-generated insights about each of your relationships. Mac only. Your messages never leave your browser.
 
-**Live: [threads-three-rouge.vercel.app](https://threads-three-rouge.vercel.app)**
+**Live demo: [read-receipts-app.vercel.app](https://read-receipts-app.vercel.app)**
 
 ## Getting started
 
@@ -41,18 +41,18 @@ The app walks you through a one-line Terminal command that copies your `chat.db`
 ```bash
 npm install
 cp .env.local.example .env.local
-# add THREADS_LLM_KEY=<your Anthropic API key>
+# add READ_RECEIPTS_LLM_KEY=<your Anthropic API key>
 npm run dev
 ```
 
-Open `http://localhost:3000` and follow the onboarding flow. It walks you through copying `chat.db` and your AddressBook into `~/Desktop/threads-data/`, then uploading them through file pickers in the browser.
+Open `http://localhost:3000` and follow the onboarding flow. It walks you through copying `chat.db` and your AddressBook into `~/Desktop/read-receipts-data/`, then uploading them through file pickers in the browser.
 
 ## Deployment
 
 1. Set a monthly spend cap on Anthropic (`console.anthropic.com` → Settings → Limits).
 2. Push this repo to GitHub.
 3. Go to `vercel.com/new` and import the repo.
-4. Add `THREADS_LLM_KEY` as an environment variable.
+4. Add `READ_RECEIPTS_LLM_KEY` as an environment variable.
 5. Deploy.
 
 The app is fully static plus one serverless route (`/api/llm`), so any Vercel tier works.

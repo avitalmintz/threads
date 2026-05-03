@@ -160,7 +160,7 @@ export async function openBrowserDb(bytes: Uint8Array): Promise<void> {
     cachedDb = null;
     if (tables.some((t) => t.startsWith("ZABCD"))) {
       throw new Error(
-        "this looks like an AddressBook file, not chat.db. pick chat.db (the file directly inside ~/Desktop/threads-data/, or in ~/Library/Messages/).",
+        "this looks like an AddressBook file, not chat.db. pick chat.db (the file directly inside ~/Desktop/read-receipts-data/, or in ~/Library/Messages/).",
       );
     }
     throw new Error(

@@ -199,7 +199,7 @@ export default function HandleDetailPage({
             href="/threads"
             className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors mb-6 inline-block"
           >
-            ← all threads
+            ← all conversations
           </Link>
           <p className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-faint)] animate-pulse">
             {phase.kind === "checking"
@@ -222,7 +222,7 @@ export default function HandleDetailPage({
             href="/onboard"
             className="border-b border-[var(--color-text)] pb-1 text-base text-[var(--color-text)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors font-[family-name:var(--font-serif)] italic"
           >
-            set up threads →
+            set up read receipts →
           </Link>
         </div>
       </main>
@@ -237,7 +237,7 @@ export default function HandleDetailPage({
             href="/threads"
             className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors mb-6 inline-block"
           >
-            ← all threads
+            ← all conversations
           </Link>
           <h1 className="font-[family-name:var(--font-serif)] text-2xl italic text-[var(--color-text)]">
             contact not found
@@ -255,7 +255,7 @@ export default function HandleDetailPage({
             href="/threads"
             className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors mb-6 inline-block"
           >
-            ← all threads
+            ← all conversations
           </Link>
           <h1 className="font-[family-name:var(--font-serif)] text-2xl italic text-[var(--color-text)] mb-4">
             something went wrong
@@ -278,7 +278,7 @@ export default function HandleDetailPage({
             href="/threads"
             className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors"
           >
-            ← all threads
+            ← all conversations
           </Link>
           <p className="text-xs italic font-[family-name:var(--font-serif)] text-[var(--color-text-faint)]">
             {detail.handle.identifier}
@@ -387,7 +387,7 @@ export default function HandleDetailPage({
             href="/threads"
             className="hover:text-[var(--color-accent)] transition-colors"
           >
-            ← back to all threads
+            ← back to all conversations
           </Link>
           <Link
             href="/onboard"

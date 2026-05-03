@@ -1,0 +1,19 @@
+# Personal data — your local chat.db, AddressBook copy, etc. Must never
+# be uploaded.
+/data/
+
+# Local cache (LLM result cache from earlier dev iterations)
+.cache/
+
+# Local Claude Code config
+.claude/
+
+# Build output (Vercel rebuilds on its own)
+/.next/
+
+# Local env (Vercel reads env vars from the project settings, not from
+# .env.local — ensure they don't get bundled either way)
+.env*
+
+# Node modules — Vercel installs these from package.json
+node_modules/

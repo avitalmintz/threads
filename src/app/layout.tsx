@@ -14,9 +14,9 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "threads — your conversations, mapped",
+  title: "read receipts: your conversations, mapped",
   description:
-    "threads reads your iMessage history and shows you your relationships over time — who you talk to, what you talk about, who you've drifted from, and what's been said.",
+    "read receipts reads your iMessage history and shows you your relationships over time. who you talk to, what you talk about, who you've drifted from, and what's been said.",
 };
 
 export default function RootLayout({

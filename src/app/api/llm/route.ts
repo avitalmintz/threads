@@ -100,10 +100,14 @@ function isAllowedOrigin(req: NextRequest): boolean {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.THREADS_LLM_KEY;
+  // Accept both names for back-compat: the env var was THREADS_LLM_KEY
+  // before the app was renamed. New deployments should use the
+  // READ_RECEIPTS_LLM_KEY name; either still works.
+  const apiKey =
+    process.env.READ_RECEIPTS_LLM_KEY ?? process.env.THREADS_LLM_KEY;
   if (!apiKey) {
     return Response.json(
-      { error: "THREADS_LLM_KEY not set on the server" },
+      { error: "READ_RECEIPTS_LLM_KEY not set on the server" },
       { status: 500 },
     );
   }

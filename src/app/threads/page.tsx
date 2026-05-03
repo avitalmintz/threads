@@ -132,20 +132,20 @@ export default function ThreadsPage() {
       <main className="relative min-h-dvh px-6 py-16 sm:px-12 sm:py-24">
         <div className="mx-auto max-w-2xl">
           <p className="font-[family-name:var(--font-serif)] italic text-base text-[var(--color-text-muted)] mb-6">
-            threads
+            read receipts
           </p>
           <h1 className="font-[family-name:var(--font-serif)] text-3xl italic text-[var(--color-text)] mb-4 leading-tight">
             no data uploaded yet
           </h1>
           <p className="text-base text-[var(--color-text-muted)] max-w-prose mb-6 leading-relaxed">
-            threads needs a copy of your <code>chat.db</code> +{" "}
+            read receipts needs a copy of your <code>chat.db</code> +{" "}
             <code>AddressBook</code> to read. it all stays in your browser.
           </p>
           <Link
             href="/onboard"
             className="inline-block border-b border-[var(--color-text)] pb-1 text-base text-[var(--color-text)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors font-[family-name:var(--font-serif)] italic"
           >
-            set up threads →
+            set up read receipts →
           </Link>
         </div>
       </main>
@@ -157,7 +157,7 @@ export default function ThreadsPage() {
       <main className="relative min-h-dvh px-6 py-16 sm:px-12 sm:py-24">
         <div className="mx-auto max-w-2xl">
           <p className="font-[family-name:var(--font-serif)] italic text-base text-[var(--color-text-muted)] mb-6">
-            threads
+            read receipts
           </p>
           <h1 className="font-[family-name:var(--font-serif)] text-3xl italic text-[var(--color-text)] mb-4 leading-tight">
             couldn&apos;t read your data
@@ -185,7 +185,7 @@ export default function ThreadsPage() {
       <div className="mx-auto max-w-3xl">
         <header className="flex items-baseline justify-between mb-12 flex-wrap gap-2">
           <p className="font-[family-name:var(--font-serif)] italic text-base text-[var(--color-text-muted)]">
-            threads
+            read receipts
           </p>
           <p className="text-xs italic font-[family-name:var(--font-serif)] text-[var(--color-text-faint)]">
             {formatNumber(stats.messageCount)} messages ·{" "}
@@ -293,7 +293,7 @@ export default function ThreadsPage() {
 
         <footer className="mt-24 pt-8 border-t border-[var(--color-rule)] text-xs text-[var(--color-text-faint)] font-[family-name:var(--font-serif)] italic flex flex-wrap gap-3 justify-between">
           <span>
-            threads · v0.1 · reading {formatNumber(stats.messageCount)} messages locally
+            read receipts · v0.1 · reading {formatNumber(stats.messageCount)} messages locally
           </span>
           <Link href="/onboard" className="hover:text-[var(--color-accent)] transition-colors">
             settings →

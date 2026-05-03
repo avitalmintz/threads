@@ -31,7 +31,7 @@ export default function Home() {
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
         <header className="mb-12">
           <p className="font-[family-name:var(--font-serif)] italic text-base text-[var(--color-text-muted)]">
-            threads
+            read receipts
           </p>
         </header>
 
@@ -44,7 +44,7 @@ export default function Home() {
 
           <p className="mt-8 max-w-md text-lg leading-relaxed text-[var(--color-text-muted)]">
             <span className="font-[family-name:var(--font-serif)] italic text-[var(--color-text)]">
-              threads
+              read receipts
             </span>{" "}
             reads your iMessage history and shows you your relationships over
             time. who you talk to, what you talk about, who you&apos;ve
@@ -105,7 +105,7 @@ export default function Home() {
                 href="/onboard"
                 className="inline-flex items-center gap-2 border-b-2 border-[var(--color-text)] pb-1 text-2xl text-[var(--color-text)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors font-[family-name:var(--font-serif)] italic"
               >
-                set up threads →
+                set up read receipts →
               </Link>
               <p className="mt-3 text-xs italic text-[var(--color-text-faint)] font-[family-name:var(--font-serif)]">
                 Mac only · takes about a minute

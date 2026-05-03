@@ -38,11 +38,11 @@ import {
 // The one-liner ends with `ls -lh` so the user immediately sees whether
 // files copied. If chat.db is missing from the listing, they'll know the
 // Full Disk Access step didn't take effect (or wasn't granted).
-const ONE_LINER = `mkdir -p ~/Desktop/threads-data && \\
-  cp ~/Library/Messages/chat.db ~/Desktop/threads-data/ && \\
-  cp -R ~/Library/Application\\ Support/AddressBook ~/Desktop/threads-data/ && \\
-  echo "" && echo "✓ done. files in ~/Desktop/threads-data/:" && \\
-  ls -lh ~/Desktop/threads-data/`;
+const ONE_LINER = `mkdir -p ~/Desktop/read-receipts-data && \\
+  cp ~/Library/Messages/chat.db ~/Desktop/read-receipts-data/ && \\
+  cp -R ~/Library/Application\\ Support/AddressBook ~/Desktop/read-receipts-data/ && \\
+  echo "" && echo "✓ done. files in ~/Desktop/read-receipts-data/:" && \\
+  ls -lh ~/Desktop/read-receipts-data/`;
 
 type DirInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   webkitdirectory?: string;
@@ -222,7 +222,7 @@ export default function OnboardPage() {
             welcome to,
           </p>
           <h1 className="font-[family-name:var(--font-serif)] text-5xl sm:text-6xl italic leading-tight text-[var(--color-text)]">
-            threads
+            read receipts
           </h1>
           <p className="mt-4 text-base text-[var(--color-text-muted)] max-w-prose leading-relaxed">
             a quiet read through every iMessage you&apos;ve sent. heatmaps,
@@ -235,7 +235,7 @@ export default function OnboardPage() {
         {!isMac && (
           <section className="mb-10 border-l-2 border-[var(--color-rule-strong)] pl-5 py-3">
             <p className="text-sm text-[var(--color-text-muted)]">
-              threads reads <code>chat.db</code> from macOS&apos;s Messages app.
+              read receipts reads <code>chat.db</code> from macOS&apos;s Messages app.
               we don&apos;t see how to do that on your platform. sorry. if
               you&apos;re on a Mac, ignore this.
             </p>
@@ -278,7 +278,7 @@ export default function OnboardPage() {
                 href="/threads"
                 className="border-b border-[var(--color-text)] pb-1 text-base text-[var(--color-text)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors font-[family-name:var(--font-serif)] italic"
               >
-                open threads →
+                see your conversations →
               </Link>
               <button
                 onClick={() => setStatus({ kind: "no-data" })}
@@ -375,7 +375,7 @@ export default function OnboardPage() {
                 step three,
               </p>
               <h2 className="font-[family-name:var(--font-serif)] text-2xl italic text-[var(--color-text)] mb-6 leading-tight">
-                upload from <code>~/Desktop/threads-data/</code>
+                upload from <code>~/Desktop/read-receipts-data/</code>
               </h2>
 
               <div className="space-y-8">
@@ -389,7 +389,7 @@ export default function OnboardPage() {
                   </h3>
                   <p className="text-sm text-[var(--color-text-muted)] mb-4">
                     the SQLite file directly inside{" "}
-                    <code>~/Desktop/threads-data/</code>.
+                    <code>~/Desktop/read-receipts-data/</code>.
                   </p>
                   <input
                     type="file"
@@ -418,7 +418,7 @@ export default function OnboardPage() {
                   </h3>
                   <p className="text-sm text-[var(--color-text-muted)] mb-4">
                     the whole folder inside{" "}
-                    <code>~/Desktop/threads-data/</code>. your browser will
+                    <code>~/Desktop/read-receipts-data/</code>. your browser will
                     ask &ldquo;upload all files?&rdquo;, say yes. without
                     this, contacts show as raw phone numbers.
                   </p>
@@ -532,7 +532,7 @@ export default function OnboardPage() {
                 href="/threads"
                 className="border-b border-[var(--color-text)] pb-1 text-base text-[var(--color-text)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-colors font-[family-name:var(--font-serif)] italic"
               >
-                open threads →
+                see your conversations →
               </Link>
               <button
                 onClick={handleClearAndReload}
