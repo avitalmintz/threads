@@ -6,6 +6,8 @@ A web app that lets you ask Claude natural-language questions about your iMessag
 
 The app walks you through a one-line Terminal command that copies your `chat.db` and AddressBook to a folder on your Desktop, then you upload those files through the browser file picker. It takes a few seconds. After that, everything runs locally and the files are persisted in the browser so you don't have to re-upload on later visits.
 
+> **Important:** macOS protects `~/Library/Messages/` by default. Before running the Terminal command, grant Full Disk Access to your terminal app: System Settings > Privacy & Security > Full Disk Access > add Terminal (or iTerm/Warp/etc), then quit and reopen the terminal. Without this, the copy command appears to succeed but actually copies nothing.
+
 ## Features
 
 - **Natural-language Q&A over your full archive.** Ask anything about your texts and Claude answers with specific dates and verbatim quotes. The model is given aggregate stats for every contact and a set of search tools; it decides what to look up, those lookups run in your browser against the in-memory `chat.db`, and the results are sent back for synthesis. Claude never sees your full archive, only the slices it asks for.

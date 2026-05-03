@@ -35,9 +35,14 @@ import {
   saveChatDb,
 } from "@/lib/browser-storage";
 
+// The one-liner ends with `ls -lh` so the user immediately sees whether
+// files copied. If chat.db is missing from the listing, they'll know the
+// Full Disk Access step didn't take effect (or wasn't granted).
 const ONE_LINER = `mkdir -p ~/Desktop/threads-data && \\
   cp ~/Library/Messages/chat.db ~/Desktop/threads-data/ && \\
-  cp -R ~/Library/Application\\ Support/AddressBook ~/Desktop/threads-data/`;
+  cp -R ~/Library/Application\\ Support/AddressBook ~/Desktop/threads-data/ && \\
+  echo "" && echo "✓ done. files in ~/Desktop/threads-data/:" && \\
+  ls -lh ~/Desktop/threads-data/`;
 
 type DirInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   webkitdirectory?: string;
@@ -298,13 +303,47 @@ export default function OnboardPage() {
                 step one,
               </p>
               <h2 className="font-[family-name:var(--font-serif)] text-2xl italic text-[var(--color-text)] mb-3 leading-tight">
-                stage your data on the desktop
+                give Terminal Full Disk Access
               </h2>
               <p className="text-sm text-[var(--color-text-muted)] max-w-prose leading-relaxed mb-4">
-                open Terminal and paste this. it copies <code>chat.db</code>{" "}
-                and your AddressBook into a folder on your desktop so the
-                browser can read them without granting Chrome full disk
-                access.
+                macOS protects <code>~/Library/Messages/</code> by default.
+                without this, the next step appears to succeed but actually
+                copies nothing. you only need to do it once.
+              </p>
+              <ol className="text-sm text-[var(--color-text-muted)] leading-relaxed space-y-1 mb-3 list-decimal pl-5">
+                <li>
+                  open <strong>System Settings</strong> (apple menu in the
+                  top-left)
+                </li>
+                <li>
+                  <strong>Privacy &amp; Security</strong> in the sidebar
+                </li>
+                <li>
+                  <strong>Full Disk Access</strong>
+                </li>
+                <li>
+                  click the <strong>+</strong> and add{" "}
+                  <strong>Terminal</strong> (or whichever terminal app you
+                  use, like iTerm or Warp)
+                </li>
+                <li>toggle it on, then quit and reopen your terminal app</li>
+              </ol>
+              <p className="text-xs italic text-[var(--color-text-faint)]">
+                already done? skip ahead.
+              </p>
+            </section>
+
+            <section className="mb-10 border-t border-[var(--color-rule)] pt-8">
+              <p className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-faint)] tracking-wide mb-2">
+                step two,
+              </p>
+              <h2 className="font-[family-name:var(--font-serif)] text-2xl italic text-[var(--color-text)] mb-3 leading-tight">
+                copy your data to the desktop
+              </h2>
+              <p className="text-sm text-[var(--color-text-muted)] max-w-prose leading-relaxed mb-4">
+                paste this into your terminal. it copies <code>chat.db</code>{" "}
+                and your AddressBook into a folder on your desktop, then
+                lists what got copied so you can confirm it worked.
               </p>
               <div className="rounded border border-[var(--color-rule)] bg-[var(--color-bg-soft,rgba(0,0,0,0.03))] overflow-hidden">
                 <pre className="text-xs font-mono p-4 overflow-x-auto whitespace-pre text-[var(--color-text)]">
@@ -312,7 +351,9 @@ export default function OnboardPage() {
                 </pre>
                 <div className="border-t border-[var(--color-rule)] px-4 py-2 flex justify-between items-center">
                   <p className="text-xs italic text-[var(--color-text-faint)]">
-                    {copied ? "copied. now paste it in Terminal." : "Terminal needs Full Disk Access — System Settings → Privacy & Security → Full Disk Access → add Terminal."}
+                    {copied
+                      ? "copied. now paste it in Terminal."
+                      : "if you see Operation not permitted, redo step one."}
                   </p>
                   <button
                     onClick={copyOneLiner}
@@ -322,11 +363,16 @@ export default function OnboardPage() {
                   </button>
                 </div>
               </div>
+              <p className="text-xs text-[var(--color-text-muted)] mt-3 max-w-prose leading-relaxed">
+                you should see a <code>chat.db</code> line and an{" "}
+                <code>AddressBook</code> line printed at the end. if either
+                is missing, Full Disk Access isn&apos;t actually granted.
+              </p>
             </section>
 
             <section className="mb-10 border-t border-[var(--color-rule)] pt-8">
               <p className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-faint)] tracking-wide mb-2">
-                step two,
+                step three,
               </p>
               <h2 className="font-[family-name:var(--font-serif)] text-2xl italic text-[var(--color-text)] mb-6 leading-tight">
                 upload from <code>~/Desktop/threads-data/</code>
