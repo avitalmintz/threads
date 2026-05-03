@@ -72,10 +72,6 @@ export default function Home() {
               entirely in your browser via WebAssembly SQLite. there&apos;s
               no account, no cloud sync, and no server ever sees your file.
             </p>
-            <p className="text-sm text-[var(--color-text-muted)] leading-relaxed mt-2">
-              the only thing that goes to an LLM is short, question-relevant
-              snippets, and only when you ask.
-            </p>
           </div>
         </section>
 
