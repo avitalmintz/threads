@@ -36,6 +36,10 @@ yarn-error.log*
 # local cache for lyrics + theme extraction
 .cache/
 
+# personal data the dev points the app at — chat.db, AddressBook, etc.
+# this must NEVER be committed.
+/data/
+
 # vercel
 .vercel
 

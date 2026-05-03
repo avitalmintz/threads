@@ -14,9 +14,9 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "ghosts — for songs you used to love",
+  title: "threads — your conversations, mapped",
   description:
-    "ghosts watches your spotify and quietly remembers your obsessions. when you forget them, they come back.",
+    "threads reads your iMessage history and shows you your relationships over time — who you talk to, what you talk about, who you've drifted from, and what's been said.",
 };
 
 export default function RootLayout({
@@ -28,8 +28,14 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${fraunces.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/* Browser extensions like Grammarly inject attributes into <body>
+          before React hydrates, which causes a noisy (but harmless) hydration
+          warning. Suppressing it here is the standard Next.js fix. */}
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
