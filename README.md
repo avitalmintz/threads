@@ -2,11 +2,15 @@
 
 A web app that lets you ask Claude natural-language questions about your iMessage history and surfaces AI-generated insights about each of your relationships. Mac only. Your messages never leave your browser.
 
+## Getting started
+
+The app walks you through a one-line Terminal command that copies your `chat.db` and AddressBook to a folder on your Desktop, then you upload those files through the browser file picker. It takes a few seconds. After that, everything runs locally and the files are persisted in the browser so you don't have to re-upload on later visits.
+
 ## Features
 
-- **Natural-language Q&A over your full archive.** Ask anything about your texts and Claude answers with specific dates and verbatim quotes. The model is given aggregate stats for every contact and a set of search tools; it decides what to look up, those lookups run in your browser against the in-memory `chat.db`, and the results are sent back for synthesis. Claude never sees your full archive — only the slices it asks for.
+- **Natural-language Q&A over your full archive.** Ask anything about your texts and Claude answers with specific dates and verbatim quotes. The model is given aggregate stats for every contact and a set of search tools; it decides what to look up, those lookups run in your browser against the in-memory `chat.db`, and the results are sent back for synthesis. Claude never sees your full archive, only the slices it asks for.
 - **Per-contact "their voice" summary.** A short AI write-up of how this specific person communicates with you: their nicknames for you, recurring phrases, tone, what they typically text about. Quotes their actual phrasing.
-- **Striking moments.** AI-selected pull-quotes from your history with a contact — the funny lines, the vulnerable ones, the turning points.
+- **Striking moments.** AI-selected pull-quotes from your history with a contact: the funny lines, the vulnerable ones, the turning points.
 - **Deep dive.** Opt-in full read of every 1:1 message you've ever exchanged with a contact. Chunked into time periods, summarized period by period, then synthesized into a single picture of how the relationship has evolved.
 - **Scoped Q&A.** The same ask box, limited to messages with one specific person.
 - **Per-contact stats.** Total messages, sender split, conversation span, an activity sparkline, a 7×24 heatmap of when you text, and texture stats (peak hour, peak day, longest streak, longest gap, median response time, who initiates more).
@@ -51,7 +55,7 @@ The app is fully static plus one serverless route (`/api/llm`), so any Vercel ti
 
 ## How it works
 
-**Browser-driven tool-use loop.** For Q&A, Claude is given three tools — `search_messages`, `rank_contacts_in_range`, and `get_contact_summary`. The browser receives Claude's tool calls, runs them locally against the in-memory `chat.db`, and sends the results back. The browser orchestrates the entire loop (up to 8 turns). The server-side `/api/llm` proxy is stateless and never reads user data.
+**Browser-driven tool-use loop.** For Q&A, Claude is given three tools: `search_messages`, `rank_contacts_in_range`, and `get_contact_summary`. The browser receives Claude's tool calls, runs them locally against the in-memory `chat.db`, and sends the results back. The browser orchestrates the entire loop (up to 8 turns). The server-side `/api/llm` proxy is stateless and never reads user data.
 
 **1:1 vs group chat attribution.** Stats include both. A friend you mostly group-chat with should still rank. But AI message extraction uses 1:1 only, because group-chat messages they sent are addressed to whoever's in the group, not you. Including them confuses analyses like "what nicknames do they use for me".
 
