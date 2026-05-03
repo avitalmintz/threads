@@ -2,6 +2,8 @@
 
 A web app that lets you ask Claude natural-language questions about your iMessage history and surfaces AI-generated insights about each of your relationships. Mac only. Your messages never leave your browser.
 
+**Live: [threads-three-rouge.vercel.app](https://threads-three-rouge.vercel.app)**
+
 ## Getting started
 
 The app walks you through a one-line Terminal command that copies your `chat.db` and AddressBook to a folder on your Desktop, then you upload those files through the browser file picker. It takes a few seconds. After that, everything runs locally and the files are persisted in the browser so you don't have to re-upload on later visits.
