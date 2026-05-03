@@ -1,6 +1,6 @@
 // Public landing page. Pure client-side: no filesystem reads, no server
 // dependencies. Detects whether the visitor has already onboarded (chat.db
-// in OPFS) and routes them appropriately — first-time visitors see the
+// in OPFS) and routes them appropriately. First-time visitors see the
 // pitch, returning visitors skip straight to /threads.
 
 "use client";
@@ -47,7 +47,7 @@ export default function Home() {
               threads
             </span>{" "}
             reads your iMessage history and shows you your relationships over
-            time — who you talk to, what you talk about, who you&apos;ve
+            time. who you talk to, what you talk about, who you&apos;ve
             drifted from, and what&apos;s been said.
           </p>
 
@@ -58,6 +58,25 @@ export default function Home() {
               when did mom start asking about the apartment?
             </span>
           </p>
+        </section>
+
+        {/* Prominent local-data callout. Sits between the pitch and the CTA
+            so anyone clicking through sees it before deciding to upload. */}
+        <section className="mb-16 max-w-prose">
+          <div className="border-l-2 border-[var(--color-accent,#7a8c5a)] pl-5 py-2">
+            <p className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-faint)] tracking-wide mb-1">
+              100% local,
+            </p>
+            <p className="text-base text-[var(--color-text)] leading-relaxed">
+              your messages never get uploaded. <code>chat.db</code> is read
+              entirely in your browser via WebAssembly SQLite. there&apos;s
+              no account, no cloud sync, and no server ever sees your file.
+            </p>
+            <p className="text-sm text-[var(--color-text-muted)] leading-relaxed mt-2">
+              the only thing that goes to an LLM is short, question-relevant
+              snippets, and only when you ask.
+            </p>
+          </div>
         </section>
 
         <section className="mb-16">
@@ -93,19 +112,6 @@ export default function Home() {
               </p>
             </>
           )}
-        </section>
-
-        <section className="mb-12 max-w-prose">
-          <p className="font-[family-name:var(--font-serif)] italic text-sm text-[var(--color-text-faint)] tracking-wide mb-2">
-            privacy,
-          </p>
-          <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
-            your messages never leave your machine. <code>chat.db</code> is
-            loaded into your <em>browser</em> via WebAssembly SQLite — every
-            query runs locally, no server sees the file. only short
-            question-relevant snippets get sent to the LLM, and only when you
-            ask. there&apos;s no account, no cloud sync, no analytics.
-          </p>
         </section>
 
         <footer className="mt-auto pt-6 border-t border-[var(--color-rule)] text-xs text-[var(--color-text-faint)] font-[family-name:var(--font-serif)] italic flex flex-wrap gap-4 justify-between">

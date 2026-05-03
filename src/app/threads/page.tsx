@@ -214,7 +214,7 @@ export default function ThreadsPage() {
           {namedCount === 0 && (
             <div className="mt-4 border-l-2 border-[var(--color-mood-longing)] pl-4 py-2 max-w-prose">
               <p className="text-sm text-[var(--color-text-muted)] italic font-[family-name:var(--font-serif)] mb-2">
-                no names resolved — only raw phone numbers / emails shown.
+                no names resolved, only raw phone numbers / emails shown.
               </p>
               <p className="text-xs text-[var(--color-text-faint)] leading-relaxed">
                 go back to <Link href="/onboard" className="underline">setup</Link>{" "}

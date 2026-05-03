@@ -227,7 +227,7 @@ export default function OnboardPage() {
           <p className="mt-4 text-base text-[var(--color-text-muted)] max-w-prose leading-relaxed">
             a quiet read through every iMessage you&apos;ve sent. heatmaps,
             arcs, the way each person talks to you, the moments that stand
-            out. nothing leaves your machine — chat.db lives in your browser,
+            out. nothing leaves your machine. chat.db lives in your browser,
             queries run locally, only summaries pass through an LLM.
           </p>
         </header>
@@ -236,7 +236,7 @@ export default function OnboardPage() {
           <section className="mb-10 border-l-2 border-[var(--color-rule-strong)] pl-5 py-3">
             <p className="text-sm text-[var(--color-text-muted)]">
               threads reads <code>chat.db</code> from macOS&apos;s Messages app.
-              we don&apos;t see how to do that on your platform — sorry. if
+              we don&apos;t see how to do that on your platform. sorry. if
               you&apos;re on a Mac, ignore this.
             </p>
           </section>
@@ -411,14 +411,14 @@ export default function OnboardPage() {
                 {/* AddressBook folder picker */}
                 <div className="rounded border border-[var(--color-rule)] p-5 bg-[var(--color-bg-soft,rgba(0,0,0,0.02))]">
                   <p className="font-[family-name:var(--font-serif)] italic text-xs uppercase tracking-widest text-[var(--color-text-faint)] mb-2">
-                    file 2 of 2 — recommended
+                    file 2 of 2 (recommended)
                   </p>
                   <h3 className="font-[family-name:var(--font-serif)] text-2xl italic text-[var(--color-text)] mb-1 leading-tight">
                     pick the <code className="not-italic font-mono">AddressBook</code> folder
                   </h3>
                   <p className="text-sm text-[var(--color-text-muted)] mb-4">
                     the whole folder inside{" "}
-                    <code>~/Desktop/threads-data/</code> — your browser will
+                    <code>~/Desktop/threads-data/</code>. your browser will
                     ask &ldquo;upload all files?&rdquo;, say yes. without
                     this, contacts show as raw phone numbers.
                   </p>
