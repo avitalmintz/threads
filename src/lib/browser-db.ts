@@ -747,28 +747,61 @@ export function getTextureStats(handleId: number): TextureStats {
 }
 
 /**
- * Cheap count of 1:1 (private, non-group) messages with a contact, with
- * non-empty text. Used by the deep dive to decide eligibility upfront,
- * and to explain to the user *why* deep dive isn't available when their
- * relationship with someone is mostly group chats.
+ * Diagnostic message counts for one contact, broken down by where the
+ * messages live:
+ *   - oneOnOneWithText: private 1:1 messages with non-empty text (the
+ *     scope used by deep dive, texture summary, striking moments, etc.)
+ *   - oneOnOneNoText: private 1:1 attachments / reactions / link previews
+ *     where text is empty. Inflates "total" but isn't usable for AI.
+ *   - groupChatFromThem: messages this contact sent in group chats. Big
+ *     for people you mostly group-chat with.
+ *
+ * COUNT(DISTINCT handle_id) defends against rare chat_handle_join
+ * duplicate-row cases that would otherwise misclassify a 1:1 as a group.
  */
-export function getOneOnOneMessageCount(handleId: number): number {
+export function getMessageBreakdown(handleId: number): {
+  oneOnOneWithText: number;
+  oneOnOneNoText: number;
+  groupChatFromThem: number;
+} {
   const row = prepare(
     `
     WITH chat_size AS (
-      SELECT chat_id, COUNT(*) AS sz, MIN(handle_id) AS solo_handle
+      SELECT chat_id, COUNT(DISTINCT handle_id) AS sz, MIN(handle_id) AS solo_handle
       FROM chat_handle_join
       GROUP BY chat_id
     )
-    SELECT COUNT(*) AS c
+    SELECT
+      SUM(CASE
+        WHEN cs.sz = 1 AND cs.solo_handle = ?
+          AND m.text IS NOT NULL AND m.text != ''
+        THEN 1 ELSE 0 END) AS oneOnOneWithText,
+      SUM(CASE
+        WHEN cs.sz = 1 AND cs.solo_handle = ?
+          AND (m.text IS NULL OR m.text = '')
+        THEN 1 ELSE 0 END) AS oneOnOneNoText,
+      SUM(CASE
+        WHEN cs.sz > 1 AND m.handle_id = ? AND m.is_from_me = 0
+        THEN 1 ELSE 0 END) AS groupChatFromThem
     FROM message m
     JOIN chat_message_join cmj ON cmj.message_id = m.ROWID
     JOIN chat_size cs ON cs.chat_id = cmj.chat_id
-    WHERE cs.sz = 1 AND cs.solo_handle = ?
-      AND m.text IS NOT NULL AND m.text != ''
     `,
-  ).get<{ c: number }>(handleId);
-  return row?.c ?? 0;
+  ).get<{
+    oneOnOneWithText: number | null;
+    oneOnOneNoText: number | null;
+    groupChatFromThem: number | null;
+  }>(handleId, handleId, handleId);
+  return {
+    oneOnOneWithText: row?.oneOnOneWithText ?? 0,
+    oneOnOneNoText: row?.oneOnOneNoText ?? 0,
+    groupChatFromThem: row?.groupChatFromThem ?? 0,
+  };
+}
+
+/** Convenience wrapper for callers that only want the 1:1-with-text count. */
+export function getOneOnOneMessageCount(handleId: number): number {
+  return getMessageBreakdown(handleId).oneOnOneWithText;
 }
 
 export function getAllMessagesForHandle(
@@ -782,7 +815,10 @@ export function getAllMessagesForHandle(
   const sql = oneOnOneOnly
     ? `
       WITH chat_size AS (
-        SELECT chat_id, COUNT(*) AS sz, MIN(handle_id) AS solo_handle
+        -- COUNT(DISTINCT) defends against rare cases where chat_handle_join
+        -- has duplicate (chat_id, handle_id) rows, which would otherwise
+        -- mis-classify a 1:1 chat as a group chat.
+        SELECT chat_id, COUNT(DISTINCT handle_id) AS sz, MIN(handle_id) AS solo_handle
         FROM chat_handle_join
         GROUP BY chat_id
       )
@@ -796,7 +832,10 @@ export function getAllMessagesForHandle(
     `
     : `
       WITH chat_size AS (
-        SELECT chat_id, COUNT(*) AS sz, MIN(handle_id) AS solo_handle
+        -- COUNT(DISTINCT) defends against rare cases where chat_handle_join
+        -- has duplicate (chat_id, handle_id) rows, which would otherwise
+        -- mis-classify a 1:1 chat as a group chat.
+        SELECT chat_id, COUNT(DISTINCT handle_id) AS sz, MIN(handle_id) AS solo_handle
         FROM chat_handle_join
         GROUP BY chat_id
       ),
@@ -938,7 +977,10 @@ export function getHandleDetail(
   const baseAttribution = oneOnOneOnly
     ? `
       WITH chat_size AS (
-        SELECT chat_id, COUNT(*) AS sz, MIN(handle_id) AS solo_handle
+        -- COUNT(DISTINCT) defends against rare cases where chat_handle_join
+        -- has duplicate (chat_id, handle_id) rows, which would otherwise
+        -- mis-classify a 1:1 chat as a group chat.
+        SELECT chat_id, COUNT(DISTINCT handle_id) AS sz, MIN(handle_id) AS solo_handle
         FROM chat_handle_join
         GROUP BY chat_id
       ),
@@ -953,7 +995,10 @@ export function getHandleDetail(
     `
     : `
       WITH chat_size AS (
-        SELECT chat_id, COUNT(*) AS sz, MIN(handle_id) AS solo_handle
+        -- COUNT(DISTINCT) defends against rare cases where chat_handle_join
+        -- has duplicate (chat_id, handle_id) rows, which would otherwise
+        -- mis-classify a 1:1 chat as a group chat.
+        SELECT chat_id, COUNT(DISTINCT handle_id) AS sz, MIN(handle_id) AS solo_handle
         FROM chat_handle_join
         GROUP BY chat_id
       ),
