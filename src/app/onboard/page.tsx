@@ -323,8 +323,7 @@ export default function OnboardPage() {
                 </li>
                 <li>
                   click the <strong>+</strong> and add{" "}
-                  <strong>Terminal</strong> (or whichever terminal app you
-                  use, like iTerm or Warp)
+                  <strong>Terminal</strong>
                 </li>
                 <li>toggle it on, then quit and reopen your terminal app</li>
               </ol>
@@ -391,13 +390,26 @@ export default function OnboardPage() {
                     the SQLite file directly inside{" "}
                     <code>~/Desktop/read-receipts-data/</code>.
                   </p>
-                  <input
-                    type="file"
-                    accept=".db,application/x-sqlite3,application/octet-stream"
-                    onChange={(e) => setChatDbFile(e.target.files?.[0] ?? null)}
-                    disabled={isUploading}
-                    className="block text-sm"
-                  />
+                  {/* Visually-styled "button" wrapping a hidden native file
+                      input. Native file inputs don't take CSS, so the
+                      standard pattern is to wrap an invisible <input> in a
+                      label and style the label as a button. */}
+                  <label
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded border border-[var(--color-text)] text-base text-[var(--color-text)] bg-[var(--color-bg)] hover:bg-[var(--color-text)] hover:text-[var(--color-bg)] transition-colors font-[family-name:var(--font-serif)] italic cursor-pointer ${
+                      isUploading ? "opacity-40 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <span>{chatDbFile ? "change file" : "choose chat.db"}</span>
+                    <input
+                      type="file"
+                      accept=".db,application/x-sqlite3,application/octet-stream"
+                      onChange={(e) =>
+                        setChatDbFile(e.target.files?.[0] ?? null)
+                      }
+                      disabled={isUploading}
+                      className="sr-only"
+                    />
+                  </label>
                   {chatDbFile && (
                     <p className="text-sm text-[var(--color-text)] italic mt-3 font-[family-name:var(--font-serif)]">
                       ✓ {chatDbFile.name} ·{" "}
@@ -422,17 +434,28 @@ export default function OnboardPage() {
                     ask &ldquo;upload all files?&rdquo;, say yes. without
                     this, contacts show as raw phone numbers.
                   </p>
-                  <input
-                    type="file"
-                    {...({
-                      webkitdirectory: "",
-                      directory: "",
-                      multiple: true,
-                    } satisfies Partial<DirInputProps>)}
-                    onChange={handleAddressBookFolder}
-                    disabled={isUploading}
-                    className="block text-sm"
-                  />
+                  <label
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded border border-[var(--color-text)] text-base text-[var(--color-text)] bg-[var(--color-bg)] hover:bg-[var(--color-text)] hover:text-[var(--color-bg)] transition-colors font-[family-name:var(--font-serif)] italic cursor-pointer ${
+                      isUploading ? "opacity-40 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <span>
+                      {addressBookFiles.length > 0
+                        ? "change folder"
+                        : "choose AddressBook folder"}
+                    </span>
+                    <input
+                      type="file"
+                      {...({
+                        webkitdirectory: "",
+                        directory: "",
+                        multiple: true,
+                      } satisfies Partial<DirInputProps>)}
+                      onChange={handleAddressBookFolder}
+                      disabled={isUploading}
+                      className="sr-only"
+                    />
+                  </label>
                   {addressBookFiles.length > 0 && (
                     <p className="text-sm text-[var(--color-text)] italic mt-3 font-[family-name:var(--font-serif)]">
                       ✓ {addressBookFiles.length} .abcddb file
