@@ -23,6 +23,10 @@ export function DeepDive({
   const [result, setResult] = useState<DeepDiveResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Separate "not eligible" state — different from a real failure (red).
+  // Set when runDeepDive returns null because there aren't enough 1:1
+  // messages with this contact to do a meaningful map-reduce read.
+  const [notEnough, setNotEnough] = useState(false);
   const [checkedCache, setCheckedCache] = useState(false);
   const [showSegments, setShowSegments] = useState(false);
   const [progress, setProgress] = useState<ProgressUpdate | null>(null);
@@ -47,13 +51,16 @@ export function DeepDive({
     if (loading) return;
     setLoading(true);
     setError(null);
+    setNotEnough(false);
     setProgress(null);
     try {
       const r = await runDeepDive(handleId, displayName, (p) => {
         setProgress(p);
       });
       if (!r) {
-        setError("not enough messages with this person to run a deep dive.");
+        // Not a failure — just means this contact doesn't have enough 1:1
+        // history to be worth chunking + summarizing.
+        setNotEnough(true);
       } else {
         setResult(r);
       }
@@ -74,7 +81,7 @@ export function DeepDive({
         deep dive: every period of your friendship
       </h2>
 
-      {!result && !loading && checkedCache && (
+      {!result && !loading && !notEnough && checkedCache && (
         <div className="border-l-2 border-[var(--color-rule-strong)] pl-5 py-2 max-w-prose">
           <p className="text-base text-[var(--color-text-muted)] leading-relaxed mb-3">
             the AI summary above reads a sample of your conversation. for a
@@ -88,6 +95,14 @@ export function DeepDive({
             run deep dive →
           </button>
         </div>
+      )}
+
+      {notEnough && !loading && (
+        <p className="text-base text-[var(--color-text-muted)] italic font-[family-name:var(--font-serif)] leading-relaxed max-w-prose">
+          not enough one-on-one messages with this person to do a deep dive.
+          deep dives need at least 50 private messages between just the two
+          of you (group-chat messages don&apos;t count).
+        </p>
       )}
 
       {loading && (

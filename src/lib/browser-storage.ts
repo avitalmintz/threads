@@ -35,15 +35,48 @@ async function root(): Promise<FileSystemDirectoryHandle> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function saveChatDb(bytes: Uint8Array): Promise<void> {
+  // Ask for persistent storage. Browsers (especially Safari) cap OPFS
+  // tightly without this — once the user opts in, quotas are typically
+  // 5-10× larger and the data won't be evicted under storage pressure.
+  // This is a no-op if already granted; it doesn't prompt the user.
+  if (navigator.storage?.persist) {
+    try {
+      await navigator.storage.persist();
+    } catch {
+      // Some browsers throw if persist isn't supported in the context.
+    }
+  }
+
+  // Pre-flight quota check. The native error ("operation would exceed
+  // storage quota") is technically accurate but doesn't tell the user
+  // what to actually do, so we bail early with a friendlier message.
+  if (navigator.storage?.estimate) {
+    try {
+      const est = await navigator.storage.estimate();
+      const quota = est.quota ?? 0;
+      const usage = est.usage ?? 0;
+      const free = Math.max(0, quota - usage);
+      if (quota > 0 && bytes.byteLength > free) {
+        const fileMb = bytes.byteLength / (1024 * 1024);
+        const freeMb = free / (1024 * 1024);
+        throw new Error(
+          `Your chat.db is ${fileMb.toFixed(0)} MB but only ${freeMb.toFixed(0)} MB is available in this browser. Try Chrome (more generous quota), free up disk space, or wipe the existing data and re-upload.`,
+        );
+      }
+    } catch (err) {
+      // Surface our pre-flight error; swallow estimate-API errors only.
+      if (err instanceof Error && err.message.startsWith("Your chat.db is")) {
+        throw err;
+      }
+    }
+  }
+
   const dir = await root();
   const fh = await dir.getFileHandle(CHAT_DB_FILE, { create: true });
   const writable = await fh.createWritable();
-  // Streaming write so we don't keep two full copies in memory at once.
-  // Browsers handle the chunking internally when we pass a single blob.
-  // Cast: write() accepts BufferSource | Blob; Uint8Array is BufferSource.
-  // Cast to a concrete-buffer Uint8Array. Newer TS narrows BufferSource so
-  // `Uint8Array<ArrayBufferLike>` isn't directly assignable; in practice the
-  // buffer always IS a real ArrayBuffer (we built it from arrayBuffer()).
+  // Cast: write() accepts BufferSource; newer TS narrows it so a
+  // `Uint8Array<ArrayBufferLike>` isn't directly assignable. In practice
+  // the buffer IS a real ArrayBuffer here (built from arrayBuffer()).
   await writable.write(bytes as Uint8Array<ArrayBuffer>);
   await writable.close();
 }
