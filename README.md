@@ -1,25 +1,42 @@
 # threads
 
-A web app that reads your iMessage history and shows you your relationships over time. Heatmaps, message volume over time, AI summaries of how each person talks to you, pull-quotes from your history, and natural-language Q&A over the whole archive.
+Ask Claude anything about your iMessage history. "Who do I fight with most?" "Who haven't I texted in 6 months?" "When did Sarah and I start drifting apart?" — type the question, and the model reaches into your actual archive to answer with quotes and dates.
 
-Mac only. Your data never leaves your browser.
+It also generates per-contact AI summaries: how each person talks to you, the most striking lines from your history with them, and an opt-in deep read of every message you've ever exchanged synthesized into a single picture of the relationship.
+
+Mac only. Your messages never leave your browser.
 
 ## Features
 
-**Contact list (`/threads`)**
-- Every contact ranked by total messages
-- For each: last seen, message range, and an activity label (active / quieter lately / fading / drifted / long quiet)
-- Ask questions across the whole archive: "Who do I fight with most?", "Who haven't I texted in 6 months?", "Who compliments me?"
+### Ask anything about your archive
 
-**Per-contact view (`/threads/[id]`)**
+A natural-language Q&A box at the top of the contact list. Type any question about your texts and Claude answers with specific dates and verbatim quotes. Examples that work well:
+
+- "Who do I fight with most? What about?"
+- "Who compliments me?"
+- "Who haven't I texted in 6 months that I used to text every day?"
+- "Who did I talk to most during the summer of 2024?"
+- "Find every time someone said they loved me"
+
+Under the hood: Claude has stats for every contact in your archive and three search tools (`search_messages`, `rank_contacts_in_range`, `get_contact_summary`). It decides which to call based on the question, those tools run **in your browser** against the in-memory copy of `chat.db`, and the results are sent back to Claude to synthesize an answer. The model never sees your full archive — only the slices it asks for.
+
+### Per-contact AI insights
+
+For any specific contact, you also get:
+
+- **Their voice** — a 4–6 sentence AI summary of how this person communicates with you specifically. Their nicknames for you, recurring phrases, tone, what they typically text about. Quotes their actual phrasing.
+- **Striking moments** — 3–5 editorial pull-quotes from your history with this person. The funny lines, the vulnerable ones, the turning points.
+- **Deep dive** — opt-in full read of every 1:1 message you've ever exchanged. Chunked into time periods, summarized one period at a time, then synthesized into a single 5–8 sentence picture of how the relationship has evolved.
+- **Scoped Q&A** — same ask box as the global one, but limited to messages with this person.
+
+### At-a-glance stats
+
+Under the AI features:
+
 - Total messages, sender split, conversation span
-- Activity sparkline (messages per month)
-- 7×24 heatmap of when you two text
+- Activity sparkline (messages per month over the entire history)
+- 7×24 heatmap of when the two of you text
 - Texture stats: peak hour, peak day, longest streak, longest gap, median response time, who initiates more
-- *Their voice* — AI summary of how this person communicates, written in 4–6 sentences
-- *Striking moments* — 3–5 editorial pull-quotes from your history with this person
-- *Deep dive* — opt-in full read of every 1:1 message you've exchanged, chunked and synthesized period by period
-- A scoped Q&A box for asking about this conversation specifically
 
 ## Privacy
 
@@ -60,10 +77,10 @@ The app is fully static plus one serverless route (`/api/llm`), so any Vercel ti
 
 ## Architecture notes
 
+**Browser-driven tool-use loop.** For the archive Q&A, Claude requests tools like `search_messages`, `rank_contacts_in_range`, and `get_contact_summary`. Those tools run in the browser against the in-memory `chat.db`, and the browser orchestrates each turn of the loop (up to 8 turns). The `/api/llm` proxy is intentionally stateless — it never has to read the user's data, and it can't be made to.
+
 **1:1 vs group chat attribution.** Stats include both — a friend you mostly group-chat with should still rank. But AI message extraction uses 1:1 only, because group-chat messages they sent are addressed to whoever's in the group, not you. Including them confuses analyses like "what nicknames do they use for me".
 
 **Stratified sampling.** For high-volume contacts, the per-contact AI samples messages spread evenly across the full history (using SQLite's `NTILE` window function), not just the most recent N. Otherwise the texture summary would bias toward the last few days.
-
-**Browser-driven tool-use loop.** For the archive Q&A, Claude requests tools like `search_messages`, `rank_contacts_in_range`, and `get_contact_summary`. Those tools run in the browser against the in-memory `chat.db`, and the browser orchestrates each turn. The `/api/llm` proxy stays stateless — it never has to read the user's data.
 
 **Cost control.** Per-IP rate limit (60 req/min token bucket), origin allowlist in production, and a hard `max_tokens` cap on the proxy. The real safety net is the Anthropic spend cap.
