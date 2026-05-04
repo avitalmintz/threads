@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Fraunces } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -35,6 +36,10 @@ export default function RootLayout({
           warning. Suppressing it here is the standard Next.js fix. */}
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {children}
+        {/* Anonymous page-view analytics. No cookies, no PII, doesn't see
+            anything about the user's iMessage data — just counts visits
+            so we know if a TikTok or tweet is sending traffic. */}
+        <Analytics />
       </body>
     </html>
   );
