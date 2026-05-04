@@ -477,9 +477,17 @@ export default function OnboardPage() {
             <section className="text-xs text-[var(--color-text-faint)] italic font-[family-name:var(--font-serif)] mt-8">
               <p className="mb-1">
                 stored locally in this browser via OPFS. wipe anytime.
-                {storage.quotaMb && (
+                {storage.quotaMb !== null && (
                   <>
-                    {" "}browser quota: ~{Math.round(storage.quotaMb).toLocaleString()} MB available.
+                    {" "}browser quota:{" "}
+                    {storage.usageMb !== null && storage.usageMb > 1
+                      ? `~${Math.round(
+                          Math.max(0, storage.quotaMb - storage.usageMb),
+                        ).toLocaleString()} MB free of ${Math.round(
+                          storage.quotaMb,
+                        ).toLocaleString()} MB total`
+                      : `~${Math.round(storage.quotaMb).toLocaleString()} MB total`}
+                    .
                   </>
                 )}
               </p>

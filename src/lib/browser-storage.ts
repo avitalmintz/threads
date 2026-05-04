@@ -34,6 +34,41 @@ async function root(): Promise<FileSystemDirectoryHandle> {
 // chat.db
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Helper: format the friendly quota error consistently for both the
+// pre-flight check and the runtime catch path.
+function quotaErrorMessage(opts: {
+  fileBytes: number;
+  freeBytes: number;
+  usageBytes: number;
+  quotaBytes: number;
+  isPersistent: boolean;
+}): string {
+  const fileMb = opts.fileBytes / (1024 * 1024);
+  const freeMb = opts.freeBytes / (1024 * 1024);
+  const quotaMb = opts.quotaBytes / (1024 * 1024);
+  const usageMb = opts.usageBytes / (1024 * 1024);
+
+  const lines: string[] = [];
+  lines.push(
+    `your chat.db is ${fileMb.toFixed(0)} MB but your browser will only let us store ${Math.max(0, freeMb).toFixed(0)} MB more right now.`,
+  );
+  if (opts.usageBytes > 50 * 1024 * 1024) {
+    lines.push(
+      `${usageMb.toFixed(0)} MB of the ${quotaMb.toFixed(0)} MB total is already used — wiping local data below would free that.`,
+    );
+  } else {
+    lines.push(
+      "this almost always means your mac's hard drive is close to full. browsers cap local storage at roughly 6% of your free disk space, so freeing up a few gigabytes (empty trash, delete a downloads folder, etc) will fix it.",
+    );
+  }
+  if (!opts.isPersistent) {
+    lines.push(
+      "tip: refreshing the page once may also help — your browser sometimes increases the quota after the second visit.",
+    );
+  }
+  return lines.join("\n\n");
+}
+
 export async function saveChatDb(bytes: Uint8Array): Promise<void> {
   // Ask for persistent storage. Browsers cap unspecified storage tightly;
   // once the user opts in, quotas are larger and the data won't be evicted
@@ -47,60 +82,85 @@ export async function saveChatDb(bytes: Uint8Array): Promise<void> {
     }
   }
 
-  // Pre-flight quota check. The native error ("operation would exceed
-  // storage quota") is technically accurate but doesn't tell the user
-  // what to actually do, so we bail early with a friendlier message.
-  if (navigator.storage?.estimate) {
+  // Helper to read current usage/quota at any moment. Used for both the
+  // pre-flight check and the runtime error catch (post-failure, the
+  // browser's numbers may be more accurate than the optimistic estimate
+  // we got before starting the write).
+  async function readEstimate(): Promise<{
+    quota: number;
+    usage: number;
+    free: number;
+  } | null> {
+    if (!navigator.storage?.estimate) return null;
     try {
-      const est = await navigator.storage.estimate();
-      const quota = est.quota ?? 0;
-      const usage = est.usage ?? 0;
-      const free = Math.max(0, quota - usage);
-      if (quota > 0 && bytes.byteLength > free) {
-        const fileMb = bytes.byteLength / (1024 * 1024);
-        const freeMb = free / (1024 * 1024);
-        const quotaMb = quota / (1024 * 1024);
-        const usageMb = usage / (1024 * 1024);
-
-        // Browser-specific advice. Chrome's quota is roughly 6% of free
-        // disk, so a small "available" number almost always means a
-        // nearly-full hard drive (NOT a browser limitation).
-        const lines: string[] = [];
-        lines.push(
-          `your chat.db is ${fileMb.toFixed(0)} MB but your browser will only let us store ${freeMb.toFixed(0)} MB right now.`,
-        );
-        if (usage > 50 * 1024 * 1024) {
-          lines.push(
-            `(${usageMb.toFixed(0)} MB of the ${quotaMb.toFixed(0)} MB total is already taken — wiping local data below would free that.)`,
-          );
-        } else {
-          lines.push(
-            "this almost always means your mac's hard drive is close to full. browsers cap local storage at roughly 6% of your free disk space, so freeing up a few gigabytes (empty trash, delete a downloads folder, etc) will fix it.",
-          );
-        }
-        if (!isPersistent) {
-          lines.push(
-            "tip: refreshing the page once may also help — your browser sometimes increases the quota after the second visit.",
-          );
-        }
-        throw new Error(lines.join("\n\n"));
-      }
-    } catch (err) {
-      // Surface our pre-flight error; swallow estimate-API errors only.
-      if (err instanceof Error && err.message.startsWith("your chat.db is")) {
-        throw err;
-      }
+      const e = await navigator.storage.estimate();
+      const quota = e.quota ?? 0;
+      const usage = e.usage ?? 0;
+      return { quota, usage, free: Math.max(0, quota - usage) };
+    } catch {
+      return null;
     }
   }
 
+  // Pre-flight check with a safety buffer. OPFS writes need temporary
+  // headroom beyond the file size (the browser may double-buffer during
+  // the streaming write), so a chat.db that *exactly* fits in the free
+  // space will still error. Reserve max(15% of file, 200 MB) as buffer.
+  const SAFETY_BUFFER = Math.max(
+    bytes.byteLength * 0.15,
+    200 * 1024 * 1024,
+  );
+  const est = await readEstimate();
+  if (est && est.quota > 0 && bytes.byteLength + SAFETY_BUFFER > est.free) {
+    throw new Error(
+      quotaErrorMessage({
+        fileBytes: bytes.byteLength,
+        freeBytes: est.free,
+        usageBytes: est.usage,
+        quotaBytes: est.quota,
+        isPersistent,
+      }),
+    );
+  }
+
+  // Actual write. Wrap in try/catch so QuotaExceededError thrown mid-write
+  // (which can happen even when pre-flight passes — the estimate is
+  // approximate) gets the same friendly explanation.
   const dir = await root();
   const fh = await dir.getFileHandle(CHAT_DB_FILE, { create: true });
   const writable = await fh.createWritable();
-  // Cast: write() accepts BufferSource; newer TS narrows it so a
-  // `Uint8Array<ArrayBufferLike>` isn't directly assignable. In practice
-  // the buffer IS a real ArrayBuffer here (built from arrayBuffer()).
-  await writable.write(bytes as Uint8Array<ArrayBuffer>);
-  await writable.close();
+  try {
+    // Cast: write() accepts BufferSource; newer TS narrows it so a
+    // `Uint8Array<ArrayBufferLike>` isn't directly assignable. In practice
+    // the buffer IS a real ArrayBuffer here (built from arrayBuffer()).
+    await writable.write(bytes as Uint8Array<ArrayBuffer>);
+    await writable.close();
+  } catch (err) {
+    // Best-effort cleanup: don't leave a half-written file around.
+    try {
+      await writable.close();
+    } catch {}
+    try {
+      await dir.removeEntry(CHAT_DB_FILE);
+    } catch {}
+
+    const isQuota =
+      err instanceof DOMException &&
+      (err.name === "QuotaExceededError" || /quota/i.test(err.message));
+    if (isQuota) {
+      const fresh = await readEstimate();
+      throw new Error(
+        quotaErrorMessage({
+          fileBytes: bytes.byteLength,
+          freeBytes: fresh?.free ?? 0,
+          usageBytes: fresh?.usage ?? 0,
+          quotaBytes: fresh?.quota ?? 0,
+          isPersistent,
+        }),
+      );
+    }
+    throw err;
+  }
 }
 
 export async function loadChatDb(): Promise<Uint8Array | null> {
