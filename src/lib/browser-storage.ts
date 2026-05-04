@@ -56,14 +56,15 @@ function quotaErrorMessage(opts: {
     lines.push(
       `${usageMb.toFixed(0)} MB of the ${quotaMb.toFixed(0)} MB total is already used — wiping local data below would free that.`,
     );
+  } else if (!opts.isPersistent && opts.quotaBytes < 4 * 1024 * 1024 * 1024) {
+    // Persistent storage was denied AND the total quota is suspiciously
+    // small (under 4 GB). Almost certainly incognito / private browsing.
+    lines.push(
+      "you're probably in an incognito or private browsing window. those modes cap local storage really tightly (often under 1-2 GB) and refuse persistent storage. open this page in a normal Chrome or Safari window instead and try again.",
+    );
   } else {
     lines.push(
       "this almost always means your mac's hard drive is close to full. browsers cap local storage at roughly 6% of your free disk space, so freeing up a few gigabytes (empty trash, delete a downloads folder, etc) will fix it.",
-    );
-  }
-  if (!opts.isPersistent) {
-    lines.push(
-      "tip: refreshing the page once may also help — your browser sometimes increases the quota after the second visit.",
     );
   }
   return lines.join("\n\n");
